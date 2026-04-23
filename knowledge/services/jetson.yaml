@@ -1,0 +1,7 @@
+default_intro: "可以，您先把具体需求发我。"
+default_followup: "最好带上板卡型号、系统版本、现在做到哪一步、卡在哪个环节，我先帮您判断是否能直接安排。"
+services:
+  - name: "Jetson 环境配置"
+  - name: "Jetson 模型部署"
+  - name: "Jetson 远程调试"
+  - name: "PyQt 联动"

@@ -1,0 +1,11 @@
+# 时间安排示例
+
+timezone: Asia/Shanghai
+weekly_slots:
+  monday: []
+  tuesday: []
+  wednesday: []
+  thursday: []
+  friday: []
+  saturday: []
+  sunday: []

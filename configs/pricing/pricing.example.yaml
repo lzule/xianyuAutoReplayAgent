@@ -1,0 +1,10 @@
+# 价格规则示例
+# 当前只是占位，后续会按你的真实服务补充。
+
+services:
+  jetson_remote_support:
+    base_price: 0
+    minimum_price: 0
+    urgent_multiplier: 1.0
+    notes:
+      - "后续补充具体报价边界"

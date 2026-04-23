@@ -1,0 +1,19 @@
+services:
+  jetson_remote_support:
+    aliases:
+      - "jetson"
+      - "nano"
+      - "orin"
+      - "xavier"
+      - "部署"
+      - "调试"
+      - "环境"
+    base_price: 200
+    minimum_price: 150
+    urgent_multiplier: 1.5
+    handoff_keywords:
+      - "包过"
+      - "发票"
+      - "退款"
+      - "长期驻场"
+      - "到场"
