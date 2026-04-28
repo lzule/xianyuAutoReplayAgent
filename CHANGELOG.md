@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## 2026-04-28
 
+- Added dual-repo handoff and merge playbook for agent-core integration.
 - Integrated external `agent_core` HTTP adapter with automatic fallback to local rules.
 - Added conversation context passing (`chat_id` history) when calling external agent.
 - Added external integration config and tests.

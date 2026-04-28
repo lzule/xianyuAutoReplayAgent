@@ -112,3 +112,6 @@ bash scripts/preflight_check.sh
 - `AGENT_CORE_TIMEOUT_MS=6000`
 
 启用后，主流程会把该客户会话历史上下文一并传给外部服务，而不是只传单条消息。
+
+双仓并行开发与最终合并交接说明见：
+- `docs/agent-core-integration-handoff.md`
