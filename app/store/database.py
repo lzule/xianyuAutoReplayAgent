@@ -132,6 +132,32 @@ class BotStore:
             ).fetchall()
         return [dict(row) for row in reversed(rows)]
 
+    def get_chat_history(self, chat_id: str, limit: int | None = None) -> list[dict[str, Any]]:
+        with self._connect() as conn:
+            if limit is None:
+                rows = conn.execute(
+                    """
+                    SELECT sender_name, role, content, created_at
+                    FROM messages
+                    WHERE chat_id = ?
+                    ORDER BY id ASC
+                    """,
+                    (chat_id,),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    """
+                    SELECT sender_name, role, content, created_at
+                    FROM messages
+                    WHERE chat_id = ?
+                    ORDER BY id DESC
+                    LIMIT ?
+                    """,
+                    (chat_id, limit),
+                ).fetchall()
+                rows = list(reversed(rows))
+        return [dict(row) for row in rows]
+
     def save_item(self, item_id: str, item_data: dict[str, Any]) -> None:
         with self._connect() as conn:
             conn.execute(

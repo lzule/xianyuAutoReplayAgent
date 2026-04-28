@@ -102,3 +102,13 @@ bash scripts/preflight_check.sh
 
 - 隐私数据（真实 Cookie、Webhook、原始聊天）禁止推送到 GitHub。
 - 详细流程见：`docs/change-and-release-process.md`
+
+## 外部 Agent Core 回接
+
+可选启用独立 `agent+r ag` 服务（HTTP 调用，失败自动回退本地规则）：
+
+- `AGENT_CORE_ENABLED=true`
+- `AGENT_CORE_BASE_URL=http://127.0.0.1:8780`
+- `AGENT_CORE_TIMEOUT_MS=6000`
+
+启用后，主流程会把该客户会话历史上下文一并传给外部服务，而不是只传单条消息。

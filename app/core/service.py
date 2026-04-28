@@ -12,6 +12,7 @@ from app.channel.xianyu_client import XianyuChannelClient
 from app.core.runtime_status import RuntimeStatusTracker
 from app.core.settings import AppSettings
 from app.core.app_types import ChatMessage, to_dict
+from app.dialog.agent_core_client import AgentCoreClient
 from app.dialog.service import DialogService
 from app.notify.feishu import FeishuNotifier
 from app.persona.service import PersonaService
@@ -30,6 +31,13 @@ class BotApplication:
         self.pricing = PricingService(settings.paths.configs_dir / "pricing" / "default.yaml")
         self.scheduling = SchedulingService(settings.paths.configs_dir / "schedule" / "default.yaml")
         self.persona = PersonaService(settings.paths.configs_dir / "persona" / "default.yaml")
+        self.agent_core_client = None
+        if settings.runtime.agent_core_enabled and settings.integration.agent_core_base_url:
+            self.agent_core_client = AgentCoreClient(
+                base_url=settings.integration.agent_core_base_url,
+                timeout_ms=settings.runtime.agent_core_timeout_ms,
+                use_system_proxy=settings.runtime.use_system_proxy,
+            )
         self.rag = RagEngine(
             config_path=settings.paths.configs_dir / "rag" / "default.yaml",
             cases_path=settings.paths.knowledge_dir / "cases" / "rag_cases.jsonl",
@@ -44,6 +52,7 @@ class BotApplication:
             scheduling_service=self.scheduling,
             persona_service=self.persona,
             rag_engine=self.rag,
+            agent_core_client=self.agent_core_client,
         )
         self.notifier = FeishuNotifier(
             settings.integration.feishu_webhook,
@@ -141,10 +150,14 @@ class BotApplication:
         if cached_item:
             item_title = cached_item.get("title") or item_title
 
+        history = self.store.get_chat_history(message.chat_id, limit=None)
         decision = self.dialog.decide(
             message.content,
             item_title=item_title,
             chat_id=message.chat_id,
+            item_id=message.item_id or "",
+            conversation_history=history,
+            meta={"sender_name": message.sender_name},
         )
         self.status_tracker.record_event(
             "decision",
@@ -295,10 +308,14 @@ class BotApplication:
         cached_item = self.store.get_item(message.item_id) if message.item_id else None
         if cached_item:
             item_title = cached_item.get("title") or item_title
+        history = self.store.get_chat_history(message.chat_id, limit=None)
         decision = self.dialog.decide(
             message.content,
             item_title=item_title,
             chat_id=message.chat_id,
+            item_id=message.item_id,
+            conversation_history=history,
+            meta={"sender_name": message.sender_name, "simulate": True},
         )
         status = "handoff" if decision.handoff_required else decision.action
         self.store.upsert_conversation(
@@ -404,6 +421,8 @@ class BotApplication:
             "feishu_enabled": self.notifier.is_enabled(),
             "xianyu_enabled": self.settings.runtime.xianyu_enabled,
             "auto_reply_enabled": self.settings.runtime.auto_reply_enabled,
+            "agent_core_enabled": self.settings.runtime.agent_core_enabled,
+            "agent_core_base_url": self.settings.integration.agent_core_base_url,
             "config_files": [
                 {"path": str(path), "exists": path.exists()} for path in required_paths
             ],

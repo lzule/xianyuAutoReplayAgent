@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## 2026-04-28
 
+- Integrated external `agent_core` HTTP adapter with automatic fallback to local rules.
+- Added conversation context passing (`chat_id` history) when calling external agent.
+- Added external integration config and tests.
 - Added independent `rag_engine` module with retrieve/rerank/generate/guardrail pipeline.
 - Added RAG config, seed cases, and local case-building script.
 - Wired `rag_engine` into dialog decision flow with gray rollout and fallback support.

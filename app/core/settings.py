@@ -56,6 +56,8 @@ class RuntimeSettings:
     message_expire_ms: int
     use_system_proxy: bool
     xianyu_user_agent: str
+    agent_core_enabled: bool
+    agent_core_timeout_ms: int
 
 
 @dataclass(frozen=True)
@@ -69,6 +71,7 @@ class ModelSettings:
 class IntegrationSettings:
     cookies_str: str
     feishu_webhook: str
+    agent_core_base_url: str
 
 
 @dataclass(frozen=True)
@@ -117,6 +120,8 @@ def load_settings() -> AppSettings:
                 "Chrome/146.0.0.0 Safari/537.36"
             ),
         ),
+        agent_core_enabled=os.getenv("AGENT_CORE_ENABLED", "false").lower() == "true",
+        agent_core_timeout_ms=int(os.getenv("AGENT_CORE_TIMEOUT_MS", "6000")),
     )
     model = ModelSettings(
         api_key=os.getenv("API_KEY", ""),
@@ -126,5 +131,6 @@ def load_settings() -> AppSettings:
     integration = IntegrationSettings(
         cookies_str=os.getenv("COOKIES_STR", ""),
         feishu_webhook=os.getenv("FEISHU_WEBHOOK", ""),
+        agent_core_base_url=os.getenv("AGENT_CORE_BASE_URL", ""),
     )
     return AppSettings(paths=paths, runtime=runtime, model=model, integration=integration)
