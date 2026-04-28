@@ -16,6 +16,7 @@ from app.dialog.service import DialogService
 from app.notify.feishu import FeishuNotifier
 from app.persona.service import PersonaService
 from app.pricing.service import PricingService
+from app.rag_engine.facade import RagEngine
 from app.scheduling.service import SchedulingService
 from app.store.database import BotStore
 
@@ -29,6 +30,12 @@ class BotApplication:
         self.pricing = PricingService(settings.paths.configs_dir / "pricing" / "default.yaml")
         self.scheduling = SchedulingService(settings.paths.configs_dir / "schedule" / "default.yaml")
         self.persona = PersonaService(settings.paths.configs_dir / "persona" / "default.yaml")
+        self.rag = RagEngine(
+            config_path=settings.paths.configs_dir / "rag" / "default.yaml",
+            cases_path=settings.paths.knowledge_dir / "cases" / "rag_cases.jsonl",
+            model_settings=settings.model,
+            audit_path=settings.paths.runtime_dir / "rag-audit.jsonl",
+        )
         self.dialog = DialogService(
             faq_path=settings.paths.knowledge_dir / "faq" / "common.yaml",
             service_path=settings.paths.knowledge_dir / "services" / "jetson.yaml",
@@ -36,6 +43,7 @@ class BotApplication:
             pricing_service=self.pricing,
             scheduling_service=self.scheduling,
             persona_service=self.persona,
+            rag_engine=self.rag,
         )
         self.notifier = FeishuNotifier(
             settings.integration.feishu_webhook,
@@ -133,7 +141,11 @@ class BotApplication:
         if cached_item:
             item_title = cached_item.get("title") or item_title
 
-        decision = self.dialog.decide(message.content, item_title=item_title)
+        decision = self.dialog.decide(
+            message.content,
+            item_title=item_title,
+            chat_id=message.chat_id,
+        )
         self.status_tracker.record_event(
             "decision",
             "ok",
@@ -283,7 +295,11 @@ class BotApplication:
         cached_item = self.store.get_item(message.item_id) if message.item_id else None
         if cached_item:
             item_title = cached_item.get("title") or item_title
-        decision = self.dialog.decide(message.content, item_title=item_title)
+        decision = self.dialog.decide(
+            message.content,
+            item_title=item_title,
+            chat_id=message.chat_id,
+        )
         status = "handoff" if decision.handoff_required else decision.action
         self.store.upsert_conversation(
             chat_id=message.chat_id,
@@ -367,8 +383,10 @@ class BotApplication:
             self.settings.paths.configs_dir / "pricing" / "default.yaml",
             self.settings.paths.configs_dir / "schedule" / "default.yaml",
             self.settings.paths.configs_dir / "handoff" / "default.yaml",
+            self.settings.paths.configs_dir / "rag" / "default.yaml",
             self.settings.paths.knowledge_dir / "faq" / "common.yaml",
             self.settings.paths.knowledge_dir / "services" / "jetson.yaml",
+            self.settings.paths.knowledge_dir / "cases" / "rag_cases.jsonl",
         ]
         diagnostics_path = self.settings.paths.runtime_dir / "self-check.txt"
         diagnostics_path.write_text("ok", encoding="utf-8")

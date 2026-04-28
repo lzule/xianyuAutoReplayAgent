@@ -10,6 +10,8 @@ import yaml
 from app.core.app_types import Decision
 from app.persona.service import PersonaService
 from app.pricing.service import PricingService
+from app.rag_engine.facade import RagEngine
+from app.rag_engine.types import ChatState
 from app.scheduling.service import SchedulingService
 
 
@@ -22,6 +24,7 @@ class DialogService:
         pricing_service: PricingService,
         scheduling_service: SchedulingService,
         persona_service: PersonaService,
+        rag_engine: RagEngine | None = None,
     ) -> None:
         self.faq_path = faq_path
         self.service_path = service_path
@@ -29,6 +32,7 @@ class DialogService:
         self.pricing_service = pricing_service
         self.scheduling_service = scheduling_service
         self.persona_service = persona_service
+        self.rag_engine = rag_engine
         self.reload()
 
     def reload(self) -> None:
@@ -38,8 +42,17 @@ class DialogService:
         self.pricing_service.reload()
         self.scheduling_service.reload()
         self.persona_service.reload()
+        if self.rag_engine:
+            self.rag_engine.reload()
 
-    def decide(self, message_text: str, item_title: str) -> Decision:
+    def decide(
+        self,
+        message_text: str,
+        item_title: str,
+        *,
+        chat_id: str = "unknown-chat",
+        chat_state: ChatState | None = None,
+    ) -> Decision:
         text = message_text.strip()
         lowered = text.lower()
 
@@ -52,6 +65,20 @@ class DialogService:
                 handoff_summary=summary,
                 reasons=["命中人工接管规则"],
             )
+
+        if self.rag_engine:
+            rag_result = self.rag_engine.reply(
+                chat_id=chat_id,
+                message_text=text,
+                item_title=item_title,
+                chat_state=chat_state,
+            )
+            if rag_result.action in {"reply", "safe_reply"} and rag_result.reply_text:
+                return Decision(
+                    action=rag_result.action,
+                    reply_text=self.persona_service.polish(rag_result.reply_text),
+                    reasons=rag_result.reasons or ["RAG 命中"],
+                )
 
         faq_reply = self._match_faq(lowered)
         if faq_reply:

@@ -1,0 +1,9 @@
+enabled: false
+gray_ratio: 0.2
+recall_k: 30
+rerank_k: 10
+min_score: 0.25
+soft_timeout_ms: 2000
+hard_timeout_ms: 6000
+max_cases_in_prompt: 8
+audit_enabled: true
