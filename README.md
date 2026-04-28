@@ -89,3 +89,16 @@ t=...; cna=...; unb=...; cookie2=...; sgcookie=...; _m_h5_tk=xxxx_时间戳; _m_
 - 第一版不接外部日历。
 
 后续等真实收发消息稳定后，再继续补“更像你的回复风格”和“更细的报价/预约规则”。
+
+## 变更与发布要求
+
+- 每次改动必须新增一条 `docs/changes/YYYY-MM-DD-<topic>.md`。
+- 每次改动必须更新 `CHANGELOG.md`。
+- 推送前必须执行：
+
+```bash
+bash scripts/preflight_check.sh
+```
+
+- 隐私数据（真实 Cookie、Webhook、原始聊天）禁止推送到 GitHub。
+- 详细流程见：`docs/change-and-release-process.md`

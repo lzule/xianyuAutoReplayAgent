@@ -8,3 +8,5 @@
 - 导入聊天样本
 - 导出运行数据
 - 检查配置完整性
+- 隐私扫描（`privacy_scan.sh`）
+- 推送前检查（`preflight_check.sh`）

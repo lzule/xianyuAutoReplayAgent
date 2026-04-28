@@ -20,9 +20,17 @@ data/tmp/
 
 # Local config
 .env
+.env.local
+.env.*.local
 
 # OS / editor
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
+
+# Sensitive / local-only business data
+chat/
+data/exports/
+data/runtime/xianyu-diagnostics/
+knowledge/style/raw/
